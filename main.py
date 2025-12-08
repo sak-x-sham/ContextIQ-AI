@@ -147,7 +147,7 @@ if not API_KEY:
     st.stop()
 
 st.set_page_config(page_title="RAG Chat", layout="wide")
-st.title("🤖 LLM Chatbot with RAG (ChromaDB)")
+st.title("🤖ContextIQ AI")
 st.write("Talk to your personal AI assistant! Your chats are stored & help the model respond better.")
 
 # -----------------------------
