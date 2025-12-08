@@ -1,0 +1,24 @@
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Chroma DB local data
+chroma_data/
+
+# Cache and model files
+.cache/
+__pycache__/
+*.log
+
+# OS files
+.DS_Store
+
+# Python build
+*.pyc
+*.pyo
+*.pyd
+*.dll
+
+#.env file ignore
+.env
