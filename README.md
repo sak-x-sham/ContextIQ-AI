@@ -46,7 +46,7 @@ This stack allows ContextIQ AI to combine **reasoning + memory**, enabling Retri
 
 ## 🖼 Screenshots
 
-> *(Upload your images later — these are placeholders)*
+
 
 | UI | Preview |
 |----|---------|
