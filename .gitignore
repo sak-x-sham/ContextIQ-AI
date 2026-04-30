@@ -1,7 +1,7 @@
 # Virtual environments
 .venv/
-env/
 venv/
+env/
 
 # Chroma DB local data
 chroma_data/

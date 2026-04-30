@@ -3,7 +3,7 @@ import streamlit as st
 from chroma_rag import store_documents, get_or_create_collection
 import os
 from io import BytesIO
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from docx import Document
 
 st.title("📚 Upload Documents")

@@ -237,3 +237,13 @@ def store_file_chunks(chat_id: str, filename: str, text: str) -> int:
     store_documents(f"chat_{chat_id}", chunks, metadatas)
     return len(chunks)
 
+
+def clear_collection(collection_name):
+    import chromadb
+
+    client = chromadb.Client()
+
+    try:
+        client.delete_collection(name=collection_name)
+    except:
+        pass
