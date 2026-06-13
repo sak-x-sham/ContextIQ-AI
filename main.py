@@ -1,121 +1,6 @@
-# import os
-# import uuid
-# from dotenv import load_dotenv
-# import streamlit as st
-# import google.generativeai as genai
-#
-# # Import our custom RAG module
-# from chroma_rag import store_message, retrieve_context
-#
-# # ------------------------
-# # 1. Load Environment + Setup
-# # ------------------------
-# load_dotenv()
-#
-# api_key = os.getenv("GEMINI_API_KEY")
-# if not api_key:
-#     st.error("❌ API key not found! Add GEMINI_API_KEY to .env")
-#     st.stop()
-#
-# genai.configure(api_key=api_key)
-#
-# # ------------------------
-# # 2. UI Settings
-# # ------------------------
-# st.set_page_config(page_title="AI Chatbot", page_icon="🤖")
-# st.title("🤖 LLM Chatbot with RAG (ChromaDB)")
-# st.write("Talk to your personal AI assistant! Your chats are stored & help the model respond better.")
-#
-# # ------------------------
-# # 3. Sidebar Controls
-# # ------------------------
-# model_name = st.sidebar.selectbox(
-#     "Choose Model",
-#     [
-#         "models/gemini-2.0-flash",
-#         "models/gemini-2.0-pro",
-#         "models/gemini-1.5-flash",
-#         "models/gemini-1.5-flash-8b",
-#         "models/gemini-1.5-pro"
-#     ],
-#     index=0
-# )
-#
-# temperature = st.sidebar.slider("Creativity", 0.0, 1.0, 0.6)
-# max_tokens = st.sidebar.slider("Max Tokens", 64, 2048, 512)
-#
-# model = genai.GenerativeModel(model_name)
-#
-# # ------------------------
-# # 4. Initialize Session
-# # ------------------------
-# if "messages" not in st.session_state:
-#     st.session_state.messages = []
-#
-# if "chat_id" not in st.session_state:
-#     st.session_state.chat_id = str(uuid.uuid4())
-#
-# chat_id = st.session_state.chat_id
-#
-# # ------------------------
-# # 5. Display Chat History
-# # ------------------------
-# for msg in st.session_state.messages:
-#     st.chat_message(msg["role"]).markdown(msg["content"])
-#
-# # ------------------------
-# # 6. Main Chat Input
-# # ------------------------
-# user_prompt = st.chat_input("Ask anything...")
-#
-# if user_prompt:
-#     # Display user message
-#     st.chat_message("user").markdown(user_prompt)
-#
-#     # Store user message into ChromaDB
-#     store_message(chat_id, "user", user_prompt)
-#
-#     # Save in session memory
-#     st.session_state.messages.append({"role": "user", "content": user_prompt})
-#
-#     # ------------------------
-#     # 7. Retrieve Context for RAG
-#     # ------------------------
-#     context_docs = retrieve_context(chat_id, user_prompt, k=4)
-#
-#     context_text = "\n".join(context_docs) if context_docs else ""
-#
-#     # ------------------------
-#     # 8. Ask Gemini with Context
-#     # ------------------------
-#     final_prompt = f"""
-# You are an AI assistant. Use the context below to answer the user's question.
-#
-# Relevant previous messages:
-# {context_text}
-#
-# User question:
-# {user_prompt}
-# """
-#
-#     with st.chat_message("assistant"):
-#         with st.spinner("Thinking..."):
-#             response = model.generate_content(
-#                 final_prompt,
-#                 generation_config=genai.types.GenerationConfig(
-#                     temperature=temperature,
-#                     max_output_tokens=max_tokens
-#                 )
-#             )
-#             ai_reply = response.text
-#             st.markdown(ai_reply)
-#
-#     # Save assistant message (DB + session)
-#     store_message(chat_id, "assistant", ai_reply)
-#     st.session_state.messages.append({"role": "assistant", "content": ai_reply})
-
-
 # main.py
+
+
 import os
 import uuid
 from dotenv import load_dotenv
@@ -237,7 +122,10 @@ with st.sidebar:
             st.session_state.last_query = user_query
             # optional: show spinner
             with st.spinner("Generating response..."):
-                response = generate_rag_response("user1", user_query)
+                response = generate_rag_response(
+                    st.session_state.chat_id,
+                    user_query
+                )
             # store & display
             st.session_state.messages.append({"role": "user", "content": user_query})
             st.session_state.messages.append({"role": "assistant", "content": response})
@@ -254,7 +142,7 @@ with st.sidebar:
 
     last_query = st.session_state.get("last_query", "")
     if last_query:
-        ctx = retrieve_context(st.session_state.chat_id, last_query, k=3)
+        ctx = retrieve_context(st.session_state.chat_id, last_query, k=5)
         if ctx:
             for i, c in enumerate(ctx, 1):
                 st.markdown(f"**{i}.** {c[:200]}...")

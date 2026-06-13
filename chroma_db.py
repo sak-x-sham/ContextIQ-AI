@@ -1,31 +1,4 @@
-# import chromadb
-# from chromadb.config import Settings
-#
-# chroma_client = chromadb.Client(
-#     Settings(chroma_db_impl="duckdb+parquet", persist_directory="chroma_store")
-# )
-#
-# collection = chroma_client.get_or_create_collection(
-#     name="chat_memory",
-#     metadata={"hnsw:space": "cosine"}
-# )
-#
-# def add_message(chat_id, role, message, embedding):
-#     collection.add(
-#         ids=[f"{chat_id}_{role}_{hash(message)}"],
-#         documents=[message],
-#         metadatas=[{"chat_id": chat_id, "role": role}],
-#         embeddings=[embedding]
-#     )
-#
-# def query_context(embedding, chat_id, n=5):
-#     results = collection.query(
-#         query_embeddings=[embedding],
-#         n_results=n,
-#         where={"chat_id": chat_id}
-#     )
-#     return results["documents"]
-
+#chroma_db.py
 
 import chromadb
 from chromadb.utils import embedding_functions

@@ -24,6 +24,10 @@ if sel:
         st.write(metas[i])
 
     if st.button("Clear this collection"):
-        clear_collection(sel)
-        st.success(f"Cleared collection {sel}")
-        st.experimental_rerun()
+        success = clear_collection(sel)
+
+        if success:
+            st.success(f"Deleted collection {sel}")
+            st.rerun()
+        else:
+            st.error("Could not delete collection")
