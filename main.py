@@ -3,16 +3,16 @@
 
 import os
 import uuid
-from dotenv import load_dotenv
+
 import streamlit as st
+from dotenv import load_dotenv
 
 # load .env before importing rag_engine (rag_engine will lazy-check API)
 load_dotenv()
 
 from rag_engine import generate_rag_response
-from chroma_rag import retrieve_context, list_collections, store_file_chunks, store_documents
-from groq_client import generate_response
-
+from chroma_rag import retrieve_context, list_collections, store_file_chunks
+from chat_store import *
 
 # Optional extractors
 try:
@@ -32,145 +32,388 @@ if not API_KEY:
     st.stop()
 
 st.set_page_config(page_title="RAG Chat", layout="wide")
+init_db()
 st.title("🤖  ContextIQ AI")
 st.write("Talk to your personal AI assistant! Your chats are stored & help the model respond better.")
 
 # -----------------------------
 # Session initialization
 # -----------------------------
+
 if "chat_id" not in st.session_state:
-    st.session_state.chat_id = str(uuid.uuid4())
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+    existing_chats = load_chats()
 
-if "chat_name" not in st.session_state:
-    st.session_state.chat_name = "Chat " + st.session_state.chat_id[:5]
+    # No chats exist in database yet
+    if not existing_chats:
+
+        first_chat_id = str(uuid.uuid4())
+        first_chat_name = f"Chat {first_chat_id[:5]}"
+
+        create_chat(
+            first_chat_id,
+            first_chat_name
+        )
+
+        st.session_state.chat_id = first_chat_id
+        st.session_state.chat_name = first_chat_name
+        st.session_state.messages = []
+
+    # Load first available chat
+    else:
+
+        first_chat_id, first_chat_name = existing_chats[0]
+
+        st.session_state.chat_id = first_chat_id
+        st.session_state.chat_name = first_chat_name
+        st.session_state.messages = load_messages(
+            first_chat_id
+        )
 
 # -----------------------------
 # Sidebar UI
 # -----------------------------
+
 with st.sidebar:
-    st.markdown("## 🧠 Memory Controls")
 
-    if st.button("Show Memory"):
-        cols = list_collections()
-        st.write(cols)
+    # ==========================
+    # KNOWLEDGE BASE
+    # ==========================
+    st.markdown("### 📚 Knowledge Base")
 
-    if st.button("Clear Memory"):
-        import chromadb
+    uploaded_file = st.file_uploader(
+        "Upload PDF, TXT or HTML",
+        type=["pdf", "txt", "html"]
+    )
 
-        client = chromadb.PersistentClient(path=os.path.join(os.getcwd(), "chroma_data"))
-        for c in client.list_collections():
-            try:
-                client.delete_collection(c.name)
-            except Exception:
-                pass
-        st.session_state.messages = []
-        st.success("All vector memory cleared!")
-        st.rerun()
-
-    st.markdown("---")
-    st.markdown("### 📂 Upload a PDF / TXT / HTML")
-
-    uploaded_file = st.file_uploader("Upload File", type=["pdf", "txt", "html"])
     if uploaded_file:
         fname = uploaded_file.name.lower()
-
-        # Extract text safely
         full_text = ""
+
+        # PDF
         if fname.endswith(".pdf"):
             if pdfplumber is None:
-                st.error("pdfplumber not installed. Run pip install pdfplumber")
+                st.error("pdfplumber not installed.")
             else:
                 with pdfplumber.open(uploaded_file) as pdf:
                     pages = [p.extract_text() or "" for p in pdf.pages]
                     full_text = "\n".join(pages)
 
+        # TXT
         elif fname.endswith(".txt"):
             raw = uploaded_file.read()
-            full_text = raw.decode("utf-8", errors="ignore") if isinstance(raw, bytes) else str(raw)
+            full_text = (
+                raw.decode("utf-8", errors="ignore")
+                if isinstance(raw, bytes)
+                else str(raw)
+            )
 
-        elif fname.endswith(".html") or fname.endswith(".htm"):
+        # HTML
+        elif fname.endswith((".html", ".htm")):
             if BeautifulSoup is None:
-                st.error("beautifulsoup4 not installed. Run pip install beautifulsoup4")
+                st.error("beautifulsoup4 not installed.")
             else:
                 raw = uploaded_file.read()
-                raw = raw.decode("utf-8", errors="ignore") if isinstance(raw, bytes) else str(raw)
+                raw = (
+                    raw.decode("utf-8", errors="ignore")
+                    if isinstance(raw, bytes)
+                    else str(raw)
+                )
+
                 soup = BeautifulSoup(raw, "html.parser")
                 full_text = soup.get_text(separator="\n")
 
         if full_text:
-            added_chunks = store_file_chunks(st.session_state.chat_id, uploaded_file.name, full_text)
-            st.success(f"Ingested {added_chunks} chunks from {uploaded_file.name}")
+            with st.spinner("Indexing document..."):
+                added_chunks = store_file_chunks(
+                    st.session_state.chat_id,
+                    uploaded_file.name,
+                    full_text
+                )
 
-            # 🔍 DEBUG — Verify stored vector memory
-            debug_preview = retrieve_context(st.session_state.chat_id, "test", k=5)
-            st.write("🔎 Debug preview of stored docs:", debug_preview)
+            st.success(
+                f"✅ Added {added_chunks} chunks from {uploaded_file.name}"
+            )
 
         else:
             st.warning("No text extracted from file.")
 
+    # ==========================
+    # CHAT MANAGEMENT
+    # ==========================
     st.markdown("---")
-    st.markdown("### 💬 Ask something based on stored memory")
+    st.markdown("### 💬 Chats")
 
-    with st.form("user_query_form"):
-        user_query = st.text_area("Type your question:")
-        submitted = st.form_submit_button("Send")
+    # New Chat
+    if st.button("➕ New Chat", use_container_width=True):
+        new_chat_id = str(uuid.uuid4())
+        new_chat_name = f"Chat {new_chat_id[:5]}"
 
-        if submitted and user_query.strip():
-            st.session_state.last_query = user_query
-            # optional: show spinner
-            with st.spinner("Generating response..."):
-                response = generate_rag_response(
-                    st.session_state.chat_id,
-                    user_query
-                )
-            # store & display
-            st.session_state.messages.append({"role": "user", "content": user_query})
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            st.success("Response generated!")
+        create_chat(
+            new_chat_id,
+            new_chat_name
+        )
+
+        st.session_state.chat_id = new_chat_id
+        st.session_state.chat_name = new_chat_name
+        st.session_state.messages = []
+
+        st.rerun()
+
+    # Chat List
+    for chat_id, chat_name in load_chats():
+
+        if st.button(
+                chat_name,
+                key=f"chat_{chat_id}"
+        ):
+            st.session_state.chat_id = chat_id
+            st.session_state.chat_name = chat_name
+
+            st.session_state.messages = load_messages(
+                chat_id
+            )
+
             st.rerun()
 
-    st.markdown("---")
-    st.write("Chat name:")
-    st.code(st.session_state.chat_name)
-    st.write("Chat ID:")
-    st.code(st.session_state.chat_id)
-    st.markdown("---")
-    st.markdown("### Retrieved context (preview)")
+    st.info(
+        f"**Current Chat:** {st.session_state.chat_name}"
+    )
 
-    last_query = st.session_state.get("last_query", "")
-    if last_query:
-        ctx = retrieve_context(st.session_state.chat_id, last_query, k=5)
-        if ctx:
-            for i, c in enumerate(ctx, 1):
-                st.markdown(f"**{i}.** {c[:200]}...")
+    # Rename Chat
+    new_name = st.text_input(
+        "Rename Chat",
+        value=st.session_state.chat_name
+    )
+
+    if st.button("💾 Save Name"):
+        rename_chat(
+            st.session_state.chat_id,
+            new_name
+        )
+
+        st.session_state.chat_name = new_name
+
+        st.rerun()
+
+    # Delete Chat
+    if st.button(
+            "🗑️ Delete Current Chat",
+            use_container_width=True
+    ):
+
+        current_chat = st.session_state.chat_id
+
+        all_chats = load_chats()
+
+        if len(all_chats) > 1:
+
+            delete_chat(current_chat)
+
+            remaining = load_chats()
+
+            next_chat_id, next_chat_name = remaining[0]
+
+            st.session_state.chat_id = next_chat_id
+            st.session_state.chat_name = next_chat_name
+
+            st.session_state.messages = load_messages(
+                next_chat_id
+            )
+
+            st.rerun()
+
         else:
-            st.write("No context retrieved.")
-    else:
-        st.write("No query yet.")
 
+            st.warning(
+                "At least one chat must exist."
+            )
+
+    # Clear Current Conversation
+    if st.button(
+            "🧹 Clear Conversation",
+            use_container_width=True
+    ):
+        clear_chat_messages(
+            st.session_state.chat_id
+        )
+
+        st.session_state.messages = []
+
+        st.rerun()
+
+    # ==========================
+    # CHAT STATS
+    # ==========================
+    st.markdown("---")
+    st.markdown("### 📊 Chat Stats")
+
+    message_count = len(
+        st.session_state.messages
+    )
+
+    user_count = sum(
+        1
+        for m in st.session_state.messages
+        if m["role"] == "user"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Messages",
+            message_count
+        )
+
+    with col2:
+        st.metric(
+            "Questions",
+            user_count
+        )
+    # ==========================
+    # MEMORY
+    # ==========================
+    st.markdown("---")
+    st.markdown("### 🧠 Memory")
+
+    with st.expander("View Stored Collections"):
+        try:
+            collections = list_collections()
+
+            if collections:
+                st.write(collections)
+            else:
+                st.write("No collections found.")
+
+        except Exception as e:
+            st.error(str(e))
+
+    # ==========================
+    # RETRIEVAL PREVIEW
+    # ==========================
+    with st.expander("🔍 Retrieved Context Preview"):
+
+        last_query = st.session_state.get(
+            "last_query",
+            ""
+        )
+
+        if last_query:
+
+            ctx = retrieve_context(
+                st.session_state.chat_id,
+                last_query,
+                k=5
+            )
+
+            if ctx:
+                for i, chunk in enumerate(ctx, start=1):
+                    st.markdown(
+                        f"**{i}.** {chunk[:250]}..."
+                    )
+            else:
+                st.write("No context retrieved.")
+
+        else:
+            st.write("No query yet.")
+
+    # ==========================
+    # DEBUG INFO
+    # ==========================
+    with st.expander("⚙️ Debug Info"):
+
+        st.write("Chat Name")
+        st.code(st.session_state.chat_name)
+
+        st.write("Chat ID")
+        st.code(st.session_state.chat_id)
+
+    # ==========================
+    # DANGER ZONE
+    # ==========================
+    st.markdown("---")
+    st.markdown("### 🗑️ Danger Zone")
+
+    confirm_delete = st.checkbox(
+        "I understand this will permanently delete all memory."
+    )
+
+    if confirm_delete:
+
+        if st.button("Clear Memory"):
+
+            import chromadb
+
+            client = chromadb.PersistentClient(
+                path=os.path.join(
+                    os.getcwd(),
+                    "chroma_data"
+                )
+            )
+
+            for collection in client.list_collections():
+                try:
+                    client.delete_collection(collection.name)
+                except Exception:
+                    pass
+
+            st.session_state.messages = []
+
+            st.success(
+                "All vector memory cleared successfully."
+            )
+
+            st.rerun()
 # -----------------------------
 # Chat UI (original simple layout)
 # -----------------------------
-st.markdown("### Chat")
 for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f"**You:** {msg['content']}")
-    else:
-        st.markdown(f"**AI:** {msg['content']}")
-
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 # -----------------------------
 # Input
 # -----------------------------
-user_text = st.text_input("Ask anything:", key="chat_input")
+with st.form("chat_form", clear_on_submit=True):
+    user_text = st.text_input("Ask anything:", key="chat_input")
+    submitted = st.form_submit_button("Send")
 
-if st.button("Send"):
+if submitted:
     if user_text and user_text.strip():
-        st.session_state.last_query = user_text
-        answer = generate_rag_response(st.session_state.chat_id, user_text)
-        st.session_state.messages.append({"role": "user", "content": user_text})
-        st.session_state.messages.append({"role": "assistant", "content": answer})
-        st.rerun()
 
+        st.session_state.last_query = user_text
+
+        answer = generate_rag_response(
+            st.session_state.chat_id,
+            user_text
+        )
+
+        # Save to session state
+        st.session_state.messages.append(
+            {
+                "role": "user",
+                "content": user_text
+            }
+        )
+
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": answer
+            }
+        )
+
+        # Save to SQLite
+        save_message(
+            st.session_state.chat_id,
+            "user",
+            user_text
+        )
+
+        save_message(
+            st.session_state.chat_id,
+            "assistant",
+            answer
+        )
+
+        st.rerun()
