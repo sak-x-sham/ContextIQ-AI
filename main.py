@@ -365,6 +365,16 @@ with st.sidebar:
             )
 
             st.rerun()
+
+    if st.button("🔥 Factory Reset"):
+
+        delete_all_chats()
+
+        st.session_state.messages = []
+
+        st.success("All chats deleted.")
+
+        st.rerun()
 # -----------------------------
 # Chat UI (original simple layout)
 # -----------------------------
@@ -374,46 +384,46 @@ for msg in st.session_state.messages:
 # -----------------------------
 # Input
 # -----------------------------
-with st.form("chat_form", clear_on_submit=True):
-    user_text = st.text_input("Ask anything:", key="chat_input")
-    submitted = st.form_submit_button("Send")
 
-if submitted:
-    if user_text and user_text.strip():
+prompt = st.chat_input("Ask ContextIQ AI...")
 
-        st.session_state.last_query = user_text
+if prompt:
+
+    st.session_state.last_query = prompt
+
+    with st.spinner("Thinking..."):
 
         answer = generate_rag_response(
             st.session_state.chat_id,
-            user_text
+            prompt
         )
 
-        # Save to session state
-        st.session_state.messages.append(
-            {
-                "role": "user",
-                "content": user_text
-            }
-        )
+    # Save to session state
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": prompt
+        }
+    )
 
-        st.session_state.messages.append(
-            {
-                "role": "assistant",
-                "content": answer
-            }
-        )
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "content": answer
+        }
+    )
 
-        # Save to SQLite
-        save_message(
-            st.session_state.chat_id,
-            "user",
-            user_text
-        )
+    # Save to SQLite
+    save_message(
+        st.session_state.chat_id,
+        "user",
+        prompt
+    )
 
-        save_message(
-            st.session_state.chat_id,
-            "assistant",
-            answer
-        )
+    save_message(
+        st.session_state.chat_id,
+        "assistant",
+        answer
+    )
 
-        st.rerun()
+    st.rerun()

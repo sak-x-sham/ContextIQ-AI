@@ -4,6 +4,7 @@ venv/
 env/
 
 # Chroma DB local data
+chat_history.db
 chroma_data/
 
 # Cache and model files

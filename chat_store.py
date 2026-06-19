@@ -118,22 +118,7 @@ def delete_chat(chat_id):
     conn.commit()
     conn.close()
 
-def rename_chat(chat_id, new_name):
 
-    conn = sqlite3.connect(DB_NAME)
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-        UPDATE chats
-        SET chat_name = ?
-        WHERE chat_id = ?
-        """,
-        (new_name, chat_id)
-    )
-
-    conn.commit()
-    conn.close()
 
 def clear_chat_messages(chat_id):
 
@@ -146,6 +131,34 @@ def clear_chat_messages(chat_id):
         WHERE chat_id = ?
         """,
         (chat_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+def delete_all_chats():
+
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute("DELETE FROM messages")
+    cur.execute("DELETE FROM chats")
+
+    conn.commit()
+    conn.close()
+
+def rename_chat(chat_id, new_name):
+
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        UPDATE chats
+        SET chat_name = ?
+        WHERE chat_id = ?
+        """,
+        (new_name, chat_id)
     )
 
     conn.commit()
