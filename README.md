@@ -1,91 +1,285 @@
-# 🧠 ContextIQ AI — Your Personal Knowledge-Aware AI
+# 🧠 ContextIQ AI — A Context-Aware Retrieval-Augmented AI Assistant
 
-> *“A conversation doesn’t start from zero — neither should AI.”*
+<div align="center">
 
-ContextIQ AI is a smart Retrieval-Augmented (RAG) chatbot that learns from your uploaded documents and past interactions — allowing it to respond with **precision, context, and memory**, not just guesses.
+### *"An AI assistant that doesn't just answer — it remembers, retrieves, and reasons."*
 
-It’s built to bridge the gap between **knowledge storage** and **intelligent reasoning**, making it more than a chatbot — it’s a **personal AI knowledge system.**
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge\&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-red?style=for-the-badge\&logo=streamlit)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Database-purple?style=for-the-badge)
+![SQLite](https://img.shields.io/badge/SQLite-Persistent%20Storage-blue?style=for-the-badge\&logo=sqlite)
+![RAG](https://img.shields.io/badge/RAG-Retrieval%20Augmented%20Generation-green?style=for-the-badge)
+![LLM](https://img.shields.io/badge/LLM-Groq-orange?style=for-the-badge)
 
----
+*A production-oriented AI assistant built using Retrieval-Augmented Generation (RAG), semantic search, persistent conversational memory, and document intelligence.*
 
-## 🌟 What Makes It Different?
-
-Unlike typical LLM chatbots that forget everything after one message, **ContextIQ AI remembers.**  
-
-It can:
-
-- 📁 Ingest & index documents (PDF, Text, HTML)  
-- 🔍 Perform semantic search using embeddings  
-- 💬 Answer based on stored knowledge — not hallucination  
-- 🧠 Retrieve relevant memory before generating a response  
-- 🤝 Maintain context across chat sessions  
-
-This creates a system closer to:
-
-🔹 A research assistant  
-🔹 A knowledge search engine  
-🔹 A personal memory-powered AI  
-
-Rather than a one-shot text generator.
+</div>
 
 ---
 
-## 🧩 Tech Architecture
+# ✨ Overview
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| LLM | **Groq (LLama 3.1)** | Fast inference & response generation |
-| Vector DB | **ChromaDB** | Stores embeddings + memory |
-| Embeddings | **Sentence Transformers MiniLM-L6-v2** | Converts text → vector meaning |
-| Frontend | **Streamlit** | Simple, fast interactive UI |
-| Runtime | Python | Core logic |
+ContextIQ AI is a **context-aware AI assistant** that combines **Large Language Models (LLMs)** with **Retrieval-Augmented Generation (RAG)** to deliver responses grounded in your own knowledge base instead of relying solely on the model's internal knowledge.
 
-This stack allows ContextIQ AI to combine **reasoning + memory**, enabling Retrieval-Augmented Generation (RAG).
+Unlike traditional chatbots that forget previous interactions, ContextIQ AI provides:
+
+* 🧠 Persistent conversational memory
+* 📚 Knowledge retrieval from uploaded documents
+* 🔍 Semantic vector search
+* 💬 Multi-chat conversation management
+* ⚡ Fast, context-aware responses
+
+The result is an AI assistant capable of acting as your personal knowledge system.
+
+---
+
+# 🚀 Key Features
+
+### 💬 Multi-Chat Architecture
+
+* Create unlimited conversations
+* Switch between chats
+* Rename conversations
+* Delete chats
+* Persistent chat history using SQLite
 
 ---
 
-## 🖼 Screenshots
+### 📄 Intelligent Document Processing
 
+Supports:
 
+* PDF
+* TXT
+* HTML
 
-| UI | Preview |
-|----|---------|
-| 🏠 Home UI | (<img width="1902" height="930" alt="image" src="https://github.com/user-attachments/assets/54b67add-a1cb-4210-843e-f0ebaaa0d44d" />
-) |
-| 💬 Chat Interface | (<img width="1911" height="940" alt="image" src="https://github.com/user-attachments/assets/d785fdfe-d361-4be5-8370-81bd05896e07" />
-) |
-| 📁 Document Upload | (<img width="1900" height="927" alt="image" src="https://github.com/user-attachments/assets/804fb544-694f-4ea8-9d38-4be2870ea61a" />
-) |
+Documents are automatically:
 
----
-## 🛠️ Future Enhancements
-
-🚧 Coming next:
-
-Vector-based session memory timeline
-
-Cloud deployment + persistent user profiles
-
-Multi-file context blending
-
-Voice input + TTS output
+* Extracted
+* Chunked
+* Embedded
+* Indexed into ChromaDB
 
 ---
-## 👤 Author
-Saksham Sharma
-💡 Builder | Android Dev | AI Explorer | Data Analyst
 
-📍 India
+### 🧠 Retrieval-Augmented Generation (RAG)
 
-"I don't just use AI — I build it."
+Instead of generating responses from memory alone:
+
+```
+User Question
+      │
+      ▼
+Retrieve Relevant Chunks
+      │
+      ▼
+LLM + Retrieved Context
+      │
+      ▼
+Grounded Response
+```
+
+This significantly reduces hallucinations while improving factual accuracy.
+
 ---
 
-## 🚀 Getting Started
+### 🔎 Semantic Search
 
-Clone and run:
+Uses Sentence Transformers embeddings together with ChromaDB to retrieve semantically relevant context instead of keyword matching.
+
+---
+
+### 💾 Persistent Memory
+
+ContextIQ remembers:
+
+* Uploaded documents
+* Previous conversations
+* Chat history
+* User context
+
+using:
+
+* SQLite
+* ChromaDB
+
+---
+
+### 🖥 Modern Chat Interface
+
+Built with Streamlit featuring:
+
+* Native chat UI
+* Document upload
+* Chat management
+* Context preview
+* Memory controls
+
+---
+
+# 🏗 System Architecture
+
+```
+                User
+                  │
+                  ▼
+         Streamlit Interface
+                  │
+                  ▼
+          User Query Input
+                  │
+                  ▼
+        Retrieve Context (RAG)
+                  │
+        ┌─────────┴─────────┐
+        ▼                   ▼
+   ChromaDB           SQLite Memory
+(Vector Database)     (Chat History)
+        │                   │
+        └─────────┬─────────┘
+                  ▼
+              LLM (Groq)
+                  │
+                  ▼
+          Context-Aware Response
+```
+
+---
+
+# 🛠 Tech Stack
+
+| Category            | Technology                           |
+| ------------------- | ------------------------------------ |
+| Language            | Python                               |
+| Frontend            | Streamlit                            |
+| LLM                 | Groq (Llama 3.1)                     |
+| RAG                 | Custom Retrieval Pipeline            |
+| Vector Database     | ChromaDB                             |
+| Embeddings          | Sentence Transformers (MiniLM-L6-v2) |
+| Database            | SQLite                               |
+| Document Processing | pdfplumber, BeautifulSoup            |
+| Version Control     | Git & GitHub                         |
+
+---
+
+# 📸 Screenshots
+
+## 🏠 Home
+
+*(Insert Screenshot)*
+
+---
+
+## 💬 Chat Interface
+
+*(Insert Screenshot)*
+
+---
+
+## 📂 Knowledge Base Upload
+
+*(Insert Screenshot)*
+
+---
+
+## 🔄 Multi Chat Support
+
+*(Insert Screenshot)*
+
+---
+
+# 📈 Project Highlights
+
+✔ Retrieval-Augmented Generation (RAG)
+
+✔ Semantic Vector Search
+
+✔ Persistent Multi-Chat Architecture
+
+✔ SQLite-backed Conversation Storage
+
+✔ ChromaDB Memory System
+
+✔ Modular Python Architecture
+
+✔ Context-Aware AI Responses
+
+✔ Production-Oriented Design
+
+---
+
+# 🚀 Deployment
+
+### Current
+
+* Local Development ✔
+* GitHub Repository ✔
+
+### Upcoming
+
+* Render Deployment
+* Google Cloud Run Deployment
+* Docker Containerization
+
+---
+
+# 🧪 Future Roadmap
+
+* Gemini API integration
+* Source citations
+* Authentication
+* User profiles
+* Cloud vector database
+* Streaming responses
+* Voice interface
+* Memory analytics dashboard
+
+---
+
+# ⚙ Installation
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/ContextIQ-AI.git
+git clone https://github.com/YOUR_USERNAME/ContextIQ-AI.git
+
 cd ContextIQ-AI
+
+python -m venv .venv
+
+source .venv/bin/activate
+
 pip install -r requirements.txt
+
 streamlit run main.py
+```
+
+---
+
+# 📚 What I Learned
+
+This project helped me gain practical experience in:
+
+* Retrieval-Augmented Generation (RAG)
+* Large Language Model integration
+* Prompt engineering
+* Semantic search
+* Vector databases
+* Persistent data storage
+* AI application architecture
+* Git workflow
+* Software engineering best practices
+
+---
+
+# 👨‍💻 Author
+
+**Saksham Sharma**
+
+AI Developer • Android Developer • Software Engineer
+
+> *"I don't just use AI—I engineer intelligent systems."*
+
+---
+
+## ⭐ Support
+
+If you found this project interesting, consider giving it a ⭐ on GitHub.
