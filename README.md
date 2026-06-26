@@ -166,25 +166,33 @@ Built with Streamlit featuring:
 
 ## 🏠 Home
 
-*(Insert Screenshot)*
+<p align="center">
+  <img src="assets/home.png" width="900">
+</p>
 
 ---
 
 ## 💬 Chat Interface
 
-*(Insert Screenshot)*
+<p align="center">
+  <img src="assets/Chat_Interface.png" width="900">
+</p>
 
 ---
 
 ## 📂 Knowledge Base Upload
 
-*(Insert Screenshot)*
+<p align="center">
+  <img src="assets/Upload.png" width="900">
+</p>
 
 ---
 
 ## 🔄 Multi Chat Support
 
-*(Insert Screenshot)*
+<p align="center">
+  <img src="assets/Chat_Interface2.png" width="900">
+</p>
 
 ---
 
