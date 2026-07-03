@@ -8,7 +8,7 @@ env/
 
 # Local databases
 chat_history.db
-chroma_data/
+chroma_db/
 
 # Assets
 assets/*.mp4

@@ -7,8 +7,11 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 # Persistent Chroma client
-CHROMA_DIR = os.path.join(os.getcwd(), "chroma_data")
-client = chromadb.PersistentClient(path=CHROMA_DIR)
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+CHROMA_DIR = BASE_DIR / "chroma_db"
+client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 
 # -------------------------
 # Embedding model (local, stable)
