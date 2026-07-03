@@ -96,14 +96,35 @@ with st.sidebar:
         full_text = ""
 
         # PDF
+        # if fname.endswith(".pdf"):
+        #     if pdfplumber is None:
+        #         st.error("pdfplumber not installed.")
+        #     else:
+        #         with pdfplumber.open(uploaded_file) as pdf:
+        #             pages = [p.extract_text() or "" for p in pdf.pages]
+        #             full_text = "\n".join(pages)
         if fname.endswith(".pdf"):
             if pdfplumber is None:
                 st.error("pdfplumber not installed.")
             else:
                 with pdfplumber.open(uploaded_file) as pdf:
-                    pages = [p.extract_text() or "" for p in pdf.pages]
-                    if len(full_text) > 2_000_000:
-                        st.warning("File too large.")
+
+                    st.write(f"Pages found: {len(pdf.pages)}")
+
+                    pages = []
+
+                    for i, page in enumerate(pdf.pages):
+                        text = page.extract_text()
+
+                        st.write(
+                            f"Page {i + 1}: {'Text Found' if text else 'No Text'}"
+                        )
+
+                        pages.append(text or "")
+
+                    full_text = "\n".join(pages)
+
+                    st.write(f"Total characters: {len(full_text)}")
 
         # TXT
         elif fname.endswith(".txt"):
