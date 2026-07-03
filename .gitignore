@@ -2,20 +2,25 @@
 .venv/
 venv/
 env/
-assets/*.mp4.mp4
-assets/*.mp4
 
-# Chroma DB local data
+# Environment variables
+.env
+
+# Local databases
 chat_history.db
 chroma_data/
 
-# Cache and model files
+# Assets
+assets/*.mp4
+
+# Cache
 .cache/
 __pycache__/
-*.log
+.pytest_cache/
+.mypy_cache/
 
-# OS files
-.DS_Store
+# Logs
+*.log
 
 # Python build
 *.pyc
@@ -23,5 +28,14 @@ __pycache__/
 *.pyd
 *.dll
 
-#.env file ignore
-.env
+# Coverage
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

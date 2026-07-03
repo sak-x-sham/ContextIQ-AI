@@ -8,7 +8,10 @@ import streamlit as st
 from dotenv import load_dotenv
 
 # load .env before importing rag_engine (rag_engine will lazy-check API)
-load_dotenv()
+from dotenv import load_dotenv
+from sympy import false
+
+load_dotenv()  # harmless if .env doesn't exist
 
 from rag_engine import generate_rag_response
 from chroma_rag import retrieve_context, list_collections, store_file_chunks
@@ -28,10 +31,12 @@ except Exception:
 # Validate API key exists (rag_engine will also check on call)
 API_KEY = os.getenv("GEMINI_API_KEY")
 if not API_KEY:
-    st.error("GEMINI_API_KEY not set in .env")
+    st.error(
+        "GEMINI_API_KEY environment variable is missing."
+    )
     st.stop()
 
-st.set_page_config(page_title="RAG Chat", layout="wide")
+st.set_page_config(page_title="ContextIQ AI", layout="wide")
 init_db()
 st.title("🤖  ContextIQ AI")
 st.write("Talk to your personal AI assistant! Your chats are stored & help the model respond better.")
@@ -97,7 +102,8 @@ with st.sidebar:
             else:
                 with pdfplumber.open(uploaded_file) as pdf:
                     pages = [p.extract_text() or "" for p in pdf.pages]
-                    full_text = "\n".join(pages)
+                    if len(full_text) > 2_000_000:
+                        st.warning("File too large.")
 
         # TXT
         elif fname.endswith(".txt"):
@@ -292,42 +298,44 @@ with st.sidebar:
     # ==========================
     # RETRIEVAL PREVIEW
     # ==========================
-    with st.expander("🔍 Retrieved Context Preview"):
+    DEBUG = False
+    if DEBUG:
+        with st.expander("🔍 Retrieved Context Preview"):
 
-        last_query = st.session_state.get(
-            "last_query",
-            ""
-        )
-
-        if last_query:
-
-            ctx = retrieve_context(
-                st.session_state.chat_id,
-                last_query,
-                k=5
+            last_query = st.session_state.get(
+                "last_query",
+                ""
             )
 
-            if ctx:
-                for i, chunk in enumerate(ctx, start=1):
-                    st.markdown(
-                        f"**{i}.** {chunk[:250]}..."
-                    )
+            if last_query:
+
+                ctx = retrieve_context(
+                    st.session_state.chat_id,
+                    last_query,
+                    k=5
+                )
+
+                if ctx:
+                    for i, chunk in enumerate(ctx, start=1):
+                        st.markdown(
+                            f"**{i}.** {chunk[:250]}..."
+                        )
+                else:
+                    st.write("No context retrieved.")
+
             else:
-                st.write("No context retrieved.")
+                st.write("No query yet.")
 
-        else:
-            st.write("No query yet.")
+        # ==========================
+        # DEBUG INFO
+        # ==========================
+        with st.expander("⚙️ Debug Info"):
 
-    # ==========================
-    # DEBUG INFO
-    # ==========================
-    with st.expander("⚙️ Debug Info"):
+            st.write("Chat Name")
+            st.code(st.session_state.chat_name)
 
-        st.write("Chat Name")
-        st.code(st.session_state.chat_name)
-
-        st.write("Chat ID")
-        st.code(st.session_state.chat_id)
+            st.write("Chat ID")
+            st.code(st.session_state.chat_id)
 
     # ==========================
     # DANGER ZONE
@@ -366,15 +374,15 @@ with st.sidebar:
 
             st.rerun()
 
-    if st.button("🔥 Factory Reset"):
-
-        delete_all_chats()
-
-        st.session_state.messages = []
-
-        st.success("All chats deleted.")
-
-        st.rerun()
+    # if st.button("🔥 Factory Reset"):
+    #
+    #     delete_all_chats()
+    #
+    #     st.session_state.messages = []
+    #
+    #     st.success("All chats deleted.")
+    #
+    #     st.rerun()
 # -----------------------------
 # Chat UI (original simple layout)
 # -----------------------------
