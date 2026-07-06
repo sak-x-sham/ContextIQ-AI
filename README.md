@@ -33,6 +33,13 @@ The result is an AI assistant capable of acting as your personal knowledge syste
 
 ---
 
+## 🌐 Live Demo
+
+🚀 Try ContextIQ AI here:
+
+https://context-iq-ai.streamlit.app
+
+---
 # 🚀 Key Features
 
 ### 💬 Multi-Chat Architecture
@@ -222,10 +229,10 @@ Built with Streamlit featuring:
 
 * Local Development ✔
 * GitHub Repository ✔
+* Streamlit Community Cloud Deployment ✔
 
 ### Upcoming
 
-* Render Deployment
 * Google Cloud Run Deployment
 * Docker Containerization
 
