@@ -24,11 +24,8 @@
 streamlit
 chromadb
 sentence-transformers
-transformers
 huggingface-hub>=0.34.0
-torch
 groq
-google-generativeai
 python-dotenv
 pypdf
 python-docx

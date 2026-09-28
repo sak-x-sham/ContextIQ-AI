@@ -28,13 +28,7 @@ try:
 except Exception:
     BeautifulSoup = None
 
-# Validate API key exists (rag_engine will also check on call)
-API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    st.error(
-        "GEMINI_API_KEY environment variable is missing."
-    )
-    st.stop()
+
 
 st.set_page_config(page_title="ContextIQ AI", layout="wide")
 init_db()
@@ -95,14 +89,6 @@ with st.sidebar:
         fname = uploaded_file.name.lower()
         full_text = ""
 
-        # PDF
-        # if fname.endswith(".pdf"):
-        #     if pdfplumber is None:
-        #         st.error("pdfplumber not installed.")
-        #     else:
-        #         with pdfplumber.open(uploaded_file) as pdf:
-        #             pages = [p.extract_text() or "" for p in pdf.pages]
-        #             full_text = "\n".join(pages)
         if fname.endswith(".pdf"):
             if pdfplumber is None:
                 st.error("pdfplumber not installed.")

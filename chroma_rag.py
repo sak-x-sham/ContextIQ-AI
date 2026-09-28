@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-CHROMA_DIR = BASE_DIR / "chroma_db"
+CHROMA_DIR = BASE_DIR / "chroma_data"
 client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 
 # -------------------------
